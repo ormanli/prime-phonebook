@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"      
+      xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>USER</title>
+    </h:head>
+    <h:body>
+		<h:commandButton id="loginLink" value="Add User" onclick="dlg.show()" title="Login"/>     
+
+		<p:growl id="growl" showDetail="true" life="3000" />  
+
+		<p:dialog id="dialog" header="Add User" widgetVar="dlg" modal="true">
+
+			<h:form enctype="multipart/form-data">  
+
+				<h:panelGrid columns="2" cellpadding="5">  
+					<!--					<p:messages id="addmessages" showDetail="true" autoUpdate="true"></p:messages>-->
+					<h:messages id="addmessages"/>
+
+					<h:outputLabel for="name" value="Name:" />  
+					<h:inputText value="#{userService.name}"   
+								 id="name" required="true" label="name" />  
+
+					<h:outputLabel for="surname" value="Surname:" />  
+					<h:inputText value="#{userService.surname}"   
+								 id="surname" required="true" label="surname" />  
+
+					<h:outputLabel for="phone" value="Phone Number:" />  
+					<p:inputMask value="#{userService.phonenumber}" id="phone" mask="(999) 999-9999"/> 
+
+					<h:outputLabel for="image" value="Image:" />  
+					<p:fileUpload id="image" fileUploadListener="#{userService.handleFileUpload}"  
+								  mode="advanced" 
+								  sizeLimit="100000"
+								  auto="true"
+								  allowTypes="/(\.|\/)(png)$/"
+								  update="resim"/>
+
+					<p:graphicImage id="resim" value="#{userService.graphicText}" /> 
+
+
+					<f:facet name="footer">  
+						<p:commandButton id="addButton" value="Add" update="addmessages"   
+										 actionListener="#{userService.save}"
+										 oncomplete="handleSaveRequest(xhr, status, args); updateusers();"/>
+						<p:commandButton id="cancelButton" value="Cancel"
+										 onclick="dlg.hide();"/>  
+					</f:facet>  
+				</h:panelGrid>  
+
+			</h:form>
+		</p:dialog>  
+
+
+		<script type="text/javascript">  
+			function handleSaveRequest(xhr, status, args) {  
+				if(args.validationFailed) {  
+					jQuery('#dialog').effect("shake", { times:3 }, 100);  
+				} else {  
+					dlg.hide();  
+				}  
+			}  
+		</script>
+		<p/>
+		<p/>
+		<p/>
+		<p/>
+		<p/>
+		<p/>
+		<h:form id="form">  
+			<p:growl id="messages" />   
+			<p:remoteCommand name="updateusers" update="users" />
+			<p:dataTable id="users" var="user" value="#{userService.userlist}">  
+
+				<p:column headerText="Name" style="width:24%">  
+					<h:outputText value="#{user.name}" />  
+				</p:column>  
+
+				<p:column headerText="Surname" style="width:24%">  
+					<h:outputText value="#{user.surname}" />  
+				</p:column>
+				
+				<p:column headerText="Phone Number" style="width:24%">  
+					<h:outputText value="#{user.phonenumber}" />  
+				</p:column>
+
+				<p:column style="width:4%">  
+					<p:commandButton id="selectButton" update=":form:display" onclick="editDialog.show()" value="Edit" title="View">  
+						<f:setPropertyActionListener value="#{user}" target="#{userService.selectedUser}" />  
+					</p:commandButton>
+					<p:commandButton id="deleteButton" update=":form:display" onclick="confirmation.show()" value="Delete" title="Delete">  
+						<f:setPropertyActionListener value="#{user}" target="#{userService.selectedUser}" />  
+					</p:commandButton>  
+				</p:column>  
+
+			</p:dataTable>  
+
+			<p:confirmDialog id="confirmDialog" message="Are you sure to delete the selected user?"  
+							 header="Delete User" severity="alert" widgetVar="confirmation">  
+
+				<p:commandButton id="confirm" value="Yes" update="messages" oncomplete="confirmation.hide(); updateusers();"  
+								 actionListener="#{userService.delete}" />  
+				<p:commandButton id="decline" value="No" onclick="confirmation.hide()" type="button" />   
+
+			</p:confirmDialog>  
+
+			<p:dialog header="User Detail" widgetVar="editDialog" resizable="false" id="editDlg"  
+					  showEffect="fade" modal="true">  
+
+				<h:panelGrid id="display" columns="2" cellpadding="4" style="margin:0 auto;">  
+
+					<h:outputText value="Name:" />  
+					<h:inputText value="#{userService.selectedUser.name}" style="font-weight:bold"/>  
+
+					<h:outputText value="Surname:" />  
+					<h:inputText value="#{userService.selectedUser.surname}" style="font-weight:bold"/>  
+
+					<h:outputText value="Phone Number:" />
+					<p:inputMask value="#{userService.selectedUser.phonenumber}" mask="(999) 999-9999"/> 
+					
+					<p:fileUpload id="image" fileUploadListener="#{userService.handleFileUpload}"  
+								  mode="advanced" 
+								  sizeLimit="100000"
+								  auto="true"
+								  allowTypes="/(\.|\/)(png)$/"
+								  update="resim2"/>
+					<p:graphicImage id="resim2" value="#{userService.convertToDynaImage(userService.selectedUser.image)}" /> 
+
+					<f:facet name="footer">  
+						<p:commandButton id="updateButton" value="Update" update=":growl"   
+										 actionListener="#{userService.update}"
+										 oncomplete="editDialog.hide(); updateusers();"/>
+						<p:commandButton id="cancelButton2" value="Cancel"
+										 onclick="editDialog.hide();"/>  
+					</f:facet>  
+				</h:panelGrid>  
+
+			</p:dialog>  
+
+		</h:form>  
+    </h:body>
+</html>
